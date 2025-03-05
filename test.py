@@ -21,6 +21,7 @@ print(
     + data_loaded["name"]
 )
 
+
 def myunction():
-    myVar = 1
-    print(f"Hello World - {myVar}")
+    my_var = 1
+    print(f"Hello World - {my_var}")

@@ -1,9 +1,13 @@
 name: Pylint
 
 on:
-  push:
+  pull_request:
     branches: [ "main" ]
     # types: [opened, synchronize, reopened, edited] # Trigger only on relevant PR events
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   pylint:
@@ -26,11 +30,14 @@ jobs:
           CHANGED_FILES=$(git diff --name-only --diff-filter=AMR ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep '\.py$' | tr '\n' ' ')
           echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_OUTPUT
       - name: Run Pylint on changed files
-        if: steps.changed-files.outputs.CHANGED_FILES != ''
+        # if: steps.changed-files.outputs.CHANGED_FILES != ''
         run: |
           CHANGED_FILES="${{ steps.changed-files.outputs.CHANGED_FILES }}"
-          pylint $CHANGED_FILES > pylint_output.txt
+          echo "$(python -m pylint $CHANGED_FILES > pylint_output.txt)"
           echo "Pylint ran on: $CHANGED_FILES"
+          echo "Result:"
+          echo "RESULT=$(cat pylint_output.txt)"
+          echo "$RESULT"
         env:
           CHANGED_FILES: ${{ steps.changed-files.outputs.CHANGED_FILES }}
       - name: Create Pylint comment
@@ -42,8 +49,6 @@ jobs:
           script: |
             const fs = require('fs');
             const output = fs.readFileSync(process.env.PYLINT_OUTPUT, 'utf8');
-            const github = require('@actions/github');
-            const context = github.context;
 
             if (context.payload.pull_request == null) {
               console.log("Not a pull request, skipping commenting");
@@ -57,18 +62,25 @@ jobs:
             // Summarize the report (example: count errors/warnings)
             const errorCount = (output.match(/E\d+:/g) || []).length;
             const warningCount = (output.match(/W\d+:/g) || []).length;
+            const refactorCount = (output.match(/R\d+:/g) || []).length;
+            const conventionCount = (output.match(/C\d+:/g) || []).length;
 
-            commentBody += `\n\n**Summary:**\n- Errors: ${errorCount}\n- Warnings: ${warningCount}\n`;
+            const errorSymbol = errorCount > 0 ? ':x:' : ':white_check_mark:';
+            const warningSymbol = warningCount > 0 ? ':x:' : ':white_check_mark:';
+            const refactorSymbol = refactorCount > 0 ? ':x:' : ':white_check_mark:';
+            const conventionSymbol = conventionCount > 0 ? ':x:' : ':white_check_mark:';
+
+            commentBody += `\n\n**Summary:**\n\n| Type       | Check | Number |\n|------------|-------|--------|\n| Errors     | ${errorSymbol} | ${errorCount} |\n| Warnings   | ${warningSymbol} | ${warningCount} |\n| Refactor   | ${refactorSymbol} | ${refactorCount} |\n| Convention | ${conventionSymbol} | ${conventionCount} |\n`;
 
             if (errorCount > 0) {
                 commentBody += "\n\n:red_circle: **Please address the errors reported by Pylint.**";
-            } else if (warningCount > 0) {
+            } else if (warningCount > 0 || refactorCount > 0 || conventionCount > 0) {
                 commentBody += "\n\n:warning: **Consider addressing the warnings reported by Pylint.**";
             } else {
                 commentBody += "\n\n:white_check_mark: **Pylint found no errors or warnings.**";
             }
 
-            github.rest.issues.createComment({
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: pull_request_number,
