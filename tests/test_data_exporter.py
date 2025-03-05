@@ -6,7 +6,6 @@ import os
 import json
 from src.utils.exporter import DataExporter
 
-
 class TestDataExporter(unittest.TestCase):
     def setUp(self):
         self.filename = "test_data.json"
