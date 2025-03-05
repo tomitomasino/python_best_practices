@@ -73,11 +73,12 @@ ignore-patterns=^\.#
 # manipulated during runtime and thus existing member attributes cannot be
 # deduced by static analysis). It supports qualified module names, as well as
 # Unix pattern matching.
-ignored-modules=pytest
+ignored-modules=
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
-init-hook='import sys; sys.path.append(".")'
+# init-hook='import sys; sys.path.append(".")'
+init-hook=
 
 # Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
 # number of processors available to use, and will cap the count on Windows to
@@ -91,7 +92,7 @@ limit-inference-results=100
 
 # List of plugins (as comma separated values of python module names) to load,
 # usually to register additional checkers.
-load-plugins=pytest
+# load-plugins=pylint_pytest,pytest
 
 # Pickle collected data for later comparisons.
 persistent=yes
