@@ -70,7 +70,7 @@ jobs:
             const refactorSymbol = refactorCount > 0 ? ':x:' : ':white_check_mark:';
             const conventionSymbol = conventionCount > 0 ? ':x:' : ':white_check_mark:';
 
-            commentBody += `\n\n**Summary:**\n- Errors: ${errorSymbol} ${errorCount}\n- Warnings: ${warningSymbol} ${warningCount}\n- Refactor: ${refactorSymbol} ${refactorCount}\n- Convention: ${conventionSymbol} ${conventionCount}\n`;
+            commentBody += `\n\n**Summary:**\n\n| Type       | Check | Number |\n|------------|-------|--------|\n| Errors     | ${errorSymbol} | ${errorCount} |\n| Warnings   | ${warningSymbol} | ${warningCount} |\n| Refactor   | ${refactorSymbol} | ${refactorCount} |\n| Convention | ${conventionSymbol} | ${conventionCount} |\n`;
 
             if (errorCount > 0) {
                 commentBody += "\n\n:red_circle: **Please address the errors reported by Pylint.**";
