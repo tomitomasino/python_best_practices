@@ -58,14 +58,14 @@ jobs:
             let commentBody = `## Test Results\n\n`;
             
             // Add summary table
-            commentBody += `### Summary\n\n`;
-            commentBody += `| Metric | Count |\n`;
-            commentBody += `|--------|-------|\n`;
-            commentBody += `| Total Tests | ${totalTests} |\n`;
-            commentBody += `| Passed | ${passedTests} :white_check_mark: |\n`;
-            commentBody += `| Failed | ${failedTests} ${failedTests > 0 ? ':x:' : ''} |\n`;
-            commentBody += `| Skipped | ${skippedTests} ${skippedTests > 0 ? ':warning:' : ''} |\n`;
-            commentBody += `| Coverage | ${coverage} |\n\n`;
+            commentBody += `\n\n`;
+            commentBody += `| Metric | Count | Status |\n`;
+            commentBody += `|--------|--------|--------|\n`;
+            commentBody += `| Total Tests | ${totalTests} | |\n`;
+            commentBody += `| Passed | ${passedTests} | :white_check_mark: |\n`;
+            commentBody += `| Failed | ${failedTests} | ${failedTests > 0 ? ':x:' : ''} |\n`;
+            commentBody += `| Skipped | ${skippedTests} | ${skippedTests > 0 ? ':warning:' : ''} |\n`;
+            commentBody += `| Coverage | ${coverage} | |\n\n`;
             
             // Add detailed output in collapsible section
             commentBody += `<details><summary>Detailed Test Output</summary>\n\n\`\`\`text\n${output}\n\`\`\`\n</details>\n`;
@@ -132,8 +132,6 @@ jobs:
 
             const pull_request_number = context.payload.pull_request.number;
 
-            let commentBody = `## Pylint Report\n\n<details><summary>Details of Pylint Run</summary>\n\n\`\`\`text\n${output}\n\`\`\`\n</details>\n`;
-
             // Summarize the report (example: count errors/warnings)
             const errorCount = (output.match(/E\d+:/g) || []).length;
             const warningCount = (output.match(/W\d+:/g) || []).length;
@@ -145,7 +143,9 @@ jobs:
             const refactorSymbol = refactorCount > 0 ? ':x:' : ':white_check_mark:';
             const conventionSymbol = conventionCount > 0 ? ':x:' : ':white_check_mark:';
 
-            commentBody += `\n\n**Summary:**\n\n| Type       | Check | Number |\n|------------|-------|--------|\n| Errors     | ${errorSymbol} | ${errorCount} |\n| Warnings   | ${warningSymbol} | ${warningCount} |\n| Refactor   | ${refactorSymbol} | ${refactorCount} |\n| Convention | ${conventionSymbol} | ${conventionCount} |\n`;
+            let commentBody += `\n\n\n| Type       | Check | Count |\n|------------|-------|--------|\n| Errors     | ${errorSymbol} | ${errorCount} |\n| Warnings   | ${warningSymbol} | ${warningCount} |\n| Refactor   | ${refactorSymbol} | ${refactorCount} |\n| Convention | ${conventionSymbol} | ${conventionCount} |\n`;
+            commentBody = `\n\n## Pylint Report\n\n<details><summary>Details of Pylint Run</summary>\n\n\`\`\`text\n${output}\n\`\`\`\n</details>\n`;
+
 
             if (errorCount > 0) {
                 commentBody += "\n\n:red_circle: **Please address the errors reported by Pylint.**";
