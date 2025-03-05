@@ -105,13 +105,14 @@ jobs:
         # if: steps.changed-files.outputs.CHANGED_FILES != ''
         run: |
           CHANGED_FILES="${{ steps.changed-files.outputs.CHANGED_FILES }}"
-          echo "$(python -m pylint $CHANGED_FILES > pylint_output.txt)"
+          echo "$($PWD python -m pylint $CHANGED_FILES > pylint_output.txt)"
           echo "Pylint ran on: $CHANGED_FILES"
           echo "Result:"
           echo "RESULT=$(cat pylint_output.txt)"
           echo "$RESULT"
         env:
           CHANGED_FILES: ${{ steps.changed-files.outputs.CHANGED_FILES }}
+          PYTHONPATH: ${{ github.workspace }}
       - name: Create Pylint comment
         if: steps.changed-files.outputs.CHANGED_FILES != ''
         uses: actions/github-script@v6
