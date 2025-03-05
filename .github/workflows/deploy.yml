@@ -29,12 +29,8 @@ jobs:
         if: steps.changed-files.outputs.CHANGED_FILES != ''
         run: |
           CHANGED_FILES="${{ steps.changed-files.outputs.CHANGED_FILES }}"
-          PYLINT_OUTPUT=$(pylint)
-          echo "Pylint output:"
-          echo "$PYLINT_OUTPUT"
-          pylint $CHANGED_FILES > pylint_output.txt
-          echo "Pylint output:"
-          < pylint_output.txt
+          python -m pylint $CHANGED_FILES > pylint_output.txt
+          echo "$(cat pylint_output.txt)"
           echo "Pylint ran on: $CHANGED_FILES"
         env:
           CHANGED_FILES: ${{ steps.changed-files.outputs.CHANGED_FILES }}
