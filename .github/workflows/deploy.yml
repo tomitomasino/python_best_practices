@@ -1,4 +1,4 @@
-name: Pylint
+name: Deploy pipeline
 
 on:
   pull_request:
