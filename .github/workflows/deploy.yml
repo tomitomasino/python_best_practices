@@ -29,7 +29,7 @@ jobs:
         # if: steps.changed-files.outputs.CHANGED_FILES != ''
         run: |
           CHANGED_FILES="${{ steps.changed-files.outputs.CHANGED_FILES }}"
-          echo "RUN=$(python -m pylint $CHANGED_FILES > pylint_output.txt)"
+          echo "$(python -m pylint $CHANGED_FILES > pylint_output.txt)"
           echo "Pylint ran on: $CHANGED_FILES"
           echo "Result:"
           echo "RESULT=$(cat pylint_output.txt)"
@@ -45,7 +45,6 @@ jobs:
           script: |
             const fs = require('fs');
             const output = fs.readFileSync(process.env.PYLINT_OUTPUT, 'utf8');
-            const github = require('@actions/github');
             const context = github.context;
 
             if (context.payload.pull_request == null) {
@@ -71,7 +70,7 @@ jobs:
                 commentBody += "\n\n:white_check_mark: **Pylint found no errors or warnings.**";
             }
 
-            github.rest.issues.createComment({
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: pull_request_number,
