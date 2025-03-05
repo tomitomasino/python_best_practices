@@ -30,6 +30,7 @@ jobs:
         run: |
           CHANGED_FILES="${{ steps.changed-files.outputs.CHANGED_FILES }}"
           pylint $CHANGED_FILES > pylint_output.txt
+          cat pylint_output.txt
           echo "Pylint ran on: $CHANGED_FILES"
         env:
           CHANGED_FILES: ${{ steps.changed-files.outputs.CHANGED_FILES }}
