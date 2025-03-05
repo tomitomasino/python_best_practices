@@ -1,7 +1,7 @@
 name: Pylint
 
 on:
-  push:
+  pull_request:
     branches: [ "main" ]
     # types: [opened, synchronize, reopened, edited] # Trigger only on relevant PR events
 
