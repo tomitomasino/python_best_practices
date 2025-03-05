@@ -25,7 +25,7 @@ jobs:
           pip install -r requirements.txt
       - name: Run tests
         run: |
-          python -m pytest tests/ -v --cov=src --cov-report=term-missing > pytest_output.txt
+          python -m pytest tests/ -v --cov=src --cov-report=term-missing | tee pytest_output.txt
       - name: Create Test Results comment
         uses: actions/github-script@v6
         env:
