@@ -23,5 +23,5 @@ print(
 
 
 def myunction():
-    my_ar = 1
+    my_var = 1
     print(f"Hello World - {my_var}")
