@@ -5,6 +5,10 @@ on:
     branches: [ "main" ]
     # types: [opened, synchronize, reopened, edited] # Trigger only on relevant PR events
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   pylint:
     runs-on: ubuntu-latest
