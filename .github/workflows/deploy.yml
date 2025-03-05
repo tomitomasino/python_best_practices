@@ -143,8 +143,8 @@ jobs:
             const refactorSymbol = refactorCount > 0 ? ':x:' : ':white_check_mark:';
             const conventionSymbol = conventionCount > 0 ? ':x:' : ':white_check_mark:';
 
-            let commentBody += `\n\n\n| Type       | Check | Count |\n|------------|-------|--------|\n| Errors     | ${errorSymbol} | ${errorCount} |\n| Warnings   | ${warningSymbol} | ${warningCount} |\n| Refactor   | ${refactorSymbol} | ${refactorCount} |\n| Convention | ${conventionSymbol} | ${conventionCount} |\n`;
-            commentBody = `\n\n## Pylint Report\n\n<details><summary>Details of Pylint Run</summary>\n\n\`\`\`text\n${output}\n\`\`\`\n</details>\n`;
+            let commentBody = `\n\n\n| Type       | Check | Count |\n|------------|-------|--------|\n| Errors     | ${errorSymbol} | ${errorCount} |\n| Warnings   | ${warningSymbol} | ${warningCount} |\n| Refactor   | ${refactorSymbol} | ${refactorCount} |\n| Convention | ${conventionSymbol} | ${conventionCount} |\n`;
+            commentBody += `\n\n## Pylint Report\n\n<details><summary>Details of Pylint Run</summary>\n\n\`\`\`text\n${output}\n\`\`\`\n</details>\n`;
 
 
             if (errorCount > 0) {
