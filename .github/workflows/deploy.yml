@@ -45,7 +45,7 @@ jobs:
           script: |
             const fs = require('fs');
             const output = fs.readFileSync(process.env.PYLINT_OUTPUT, 'utf8');
-            const context = github.context;
+            # const context = github.context;
 
             if (context.payload.pull_request == null) {
               console.log("Not a pull request, skipping commenting");
