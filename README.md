@@ -1,5 +1,9 @@
 # MODEL REPOSITORY
 
+## RULES
+
+- feature branch is deleted on PR merge
+
 ## RUN TEST
 
 ```bash
