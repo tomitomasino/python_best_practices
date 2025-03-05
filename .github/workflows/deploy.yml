@@ -24,9 +24,12 @@ jobs:
           pip install pytest pytest-cov
           pip install -r requirements.txt
       - name: Run tests
+        id: pytest
         run: |
           python -m pytest tests/ -v --cov=src --cov-report=term-missing | tee pytest_output.txt
+          exit ${PIPESTATUS[0]}
       - name: Create Test Results comment
+        if: always()
         uses: actions/github-script@v6
         env:
           TEST_OUTPUT: ${{ github.workspace }}/pytest_output.txt
