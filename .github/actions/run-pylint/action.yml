@@ -40,7 +40,9 @@ runs:
         echo "DEBUG: Raw diff output:"
         git diff --name-only --diff-filter=AMR "$INPUTS_BASE_SHA" "$INPUTS_HEAD_SHA"
         
-        # Get the changed files
+        # Get the changed files, using || true to prevent failure when no Python files are found
+        CHANGED_FILES=$(git diff --name-only --diff-filter=AMR "$INPUTS_BASE_SHA" "$INPUTS_HEAD_SHA" | grep '\.py$' || true | tr '\n' ' ')
+    
         CHANGED_FILES=$(git diff --name-only --diff-filter=AMR "$INPUTS_BASE_SHA" "$INPUTS_HEAD_SHA" | grep '\.py$' | tr '\n' ' ')
         
         # Show the files before trimming
