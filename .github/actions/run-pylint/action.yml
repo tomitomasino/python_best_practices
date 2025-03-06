@@ -28,7 +28,13 @@ runs:
       id: changed-files
       shell: bash
       run: |
+        set -e
+        # Get the changed files
         CHANGED_FILES=$(git diff --name-only --diff-filter=AMR "$INPUTS_BASE_SHA" "$INPUTS_HEAD_SHA" | grep '\.py$' | tr '\n' ' ')
+
+        # Trim leading/trailing whitespace
+        CHANGED_FILES="$(echo "$CHANGED_FILES" | xargs)"
+        
         echo "Changed files: $CHANGED_FILES"
         echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_OUTPUT
       env:
@@ -39,6 +45,7 @@ runs:
       if: steps.changed-files.outputs.CHANGED_FILES != ''
       shell: bash
       run: |
+        set -e
         CHANGED_FILES="${{ steps.changed-files.outputs.CHANGED_FILES }}"
         echo "$(python -m pylint $CHANGED_FILES > pylint_output.txt)"
         echo "Pylint ran on: $CHANGED_FILES"
