@@ -14,6 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/run-tests
+        name: run-test action
 
   pylint:
     runs-on: ubuntu-latest
@@ -22,6 +23,7 @@ jobs:
         with:
           fetch-depth: 0  # Required to get the changed files
       - uses: ./.github/actions/run-pylint
+        name: run-pylint action
         with:
           base_sha: ${{ github.event.pull_request.base.sha }}
           head_sha: ${{ github.sha }}
