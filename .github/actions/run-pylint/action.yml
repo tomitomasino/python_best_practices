@@ -28,15 +28,33 @@ runs:
       id: changed-files
       shell: bash
       run: |
-        set -e
+        set -x  # Enable debug mode to see commands being executed
+        
+        echo "DEBUG: Base SHA = $INPUTS_BASE_SHA"
+        echo "DEBUG: Head SHA = $INPUTS_HEAD_SHA"
+        
+        echo "DEBUG: Running git diff command..."
+        echo "git diff --name-only --diff-filter=AMR $INPUTS_BASE_SHA $INPUTS_HEAD_SHA"
+        
+        # Show the raw diff output
+        echo "DEBUG: Raw diff output:"
+        git diff --name-only --diff-filter=AMR "$INPUTS_BASE_SHA" "$INPUTS_HEAD_SHA"
+        
         # Get the changed files
         CHANGED_FILES=$(git diff --name-only --diff-filter=AMR "$INPUTS_BASE_SHA" "$INPUTS_HEAD_SHA" | grep '\.py$' | tr '\n' ' ')
-
+        
+        # Show the files before trimming
+        echo "DEBUG: Files before trim: [$CHANGED_FILES]"
+        
         # Trim leading/trailing whitespace
         CHANGED_FILES="$(echo "$CHANGED_FILES" | xargs)"
         
-        echo "Changed files: $CHANGED_FILES"
+        echo "DEBUG: Final CHANGED_FILES value: [$CHANGED_FILES]"
         echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_OUTPUT
+        
+        # Also print the contents of GITHUB_OUTPUT for verification
+        echo "DEBUG: Contents of GITHUB_OUTPUT:"
+        cat $GITHUB_OUTPUT
       env:
         INPUTS_BASE_SHA: ${{ inputs.base_sha }}
         INPUTS_HEAD_SHA: ${{ inputs.head_sha }}
@@ -45,7 +63,7 @@ runs:
       if: steps.changed-files.outputs.CHANGED_FILES != ''
       shell: bash
       run: |
-        set -e
+        set -x
         CHANGED_FILES="${{ steps.changed-files.outputs.CHANGED_FILES }}"
         echo "$(python -m pylint $CHANGED_FILES > pylint_output.txt)"
         echo "Pylint ran on: $CHANGED_FILES"
