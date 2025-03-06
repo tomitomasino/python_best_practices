@@ -175,5 +175,4 @@ cython_debug/
 
 # VS Code settings
 .vscode/*
-!.vscode/settings.json
-!.vscode/extensions.json
+
