@@ -28,9 +28,12 @@ runs:
       id: changed-files
       shell: bash
       run: |
-        CHANGED_FILES=$(git diff --name-only --diff-filter=AMR ${{ inputs.base_sha }} ${{ inputs.head_sha }} | grep '\.py$' | tr '\n' ' ')
-        echo "$CHANGED_FILES"
+        CHANGED_FILES=$(git diff --name-only --diff-filter=AMR "$INPUTS_BASE_SHA" "$INPUTS_HEAD_SHA" | grep '\.py$' | tr '\n' ' ')
+        echo "Changed files: $CHANGED_FILES"
         echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_OUTPUT
+      env:
+        INPUTS_BASE_SHA: ${{ inputs.base_sha }}
+        INPUTS_HEAD_SHA: ${{ inputs.head_sha }}
 
     - name: Run Pylint on changed files
       if: steps.changed-files.outputs.CHANGED_FILES != ''
