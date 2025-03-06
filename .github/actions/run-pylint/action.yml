@@ -21,6 +21,7 @@ runs:
       shell: bash
       run: |
         python -m pip install --upgrade pip
+        pip install -r requirements.txt
         pip install pylint pytest
 
     - name: Get changed files
@@ -41,6 +42,7 @@ runs:
         echo "$RESULT"
       env:
         CHANGED_FILES: ${{ steps.changed-files.outputs.CHANGED_FILES }}
+        PYTHONPATH: ${{ github.workspace }}
 
     - name: Create Pylint comment
       if: steps.changed-files.outputs.CHANGED_FILES != ''
