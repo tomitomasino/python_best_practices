@@ -5,7 +5,6 @@ This is a test file
 import json
 
 data = {"name": "John Doe", "age": 30, "city": "New York"}
-
 GLOBAL_VAR = 0
 
 # Convert Python dictionary to JSON string
@@ -20,7 +19,6 @@ print(
     + data_loaded["name"]
     + data_loaded["name"]
 )
-
 
 def myunction():
     my_var = 1

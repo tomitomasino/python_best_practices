@@ -1,91 +1,27 @@
-name: Pylint
+name: Deploy pipeline
 
 on:
   pull_request:
     branches: [ "main" ]
-    # types: [opened, synchronize, reopened, edited] # Trigger only on relevant PR events
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/run-tests
+
   pylint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Required to get the changed files
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v3
+      - uses: ./.github/actions/run-pylint
         with:
-          python-version: "3.10"
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pylint
-      - name: Get changed files
-        id: changed-files
-        run: |
-          CHANGED_FILES=$(git diff --name-only --diff-filter=AMR ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep '\.py$' | tr '\n' ' ')
-          echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_OUTPUT
-      - name: Run Pylint on changed files
-        # if: steps.changed-files.outputs.CHANGED_FILES != ''
-        run: |
-          CHANGED_FILES="${{ steps.changed-files.outputs.CHANGED_FILES }}"
-          echo "$(python -m pylint $CHANGED_FILES > pylint_output.txt)"
-          echo "Pylint ran on: $CHANGED_FILES"
-          echo "Result:"
-          echo "RESULT=$(cat pylint_output.txt)"
-          echo "$RESULT"
-        env:
-          CHANGED_FILES: ${{ steps.changed-files.outputs.CHANGED_FILES }}
-      - name: Create Pylint comment
-        if: steps.changed-files.outputs.CHANGED_FILES != ''
-        uses: actions/github-script@v6
-        env:
-          PYLINT_OUTPUT: ${{ github.workspace }}/pylint_output.txt
-        with:
-          script: |
-            const fs = require('fs');
-            const output = fs.readFileSync(process.env.PYLINT_OUTPUT, 'utf8');
-
-            if (context.payload.pull_request == null) {
-              console.log("Not a pull request, skipping commenting");
-              return;
-            }
-
-            const pull_request_number = context.payload.pull_request.number;
-
-            let commentBody = `## Pylint Report\n\n<details><summary>Details of Pylint Run</summary>\n\n\`\`\`text\n${output}\n\`\`\`\n</details>\n`;
-
-            // Summarize the report (example: count errors/warnings)
-            const errorCount = (output.match(/E\d+:/g) || []).length;
-            const warningCount = (output.match(/W\d+:/g) || []).length;
-            const refactorCount = (output.match(/R\d+:/g) || []).length;
-            const conventionCount = (output.match(/C\d+:/g) || []).length;
-
-            const errorSymbol = errorCount > 0 ? ':x:' : ':white_check_mark:';
-            const warningSymbol = warningCount > 0 ? ':x:' : ':white_check_mark:';
-            const refactorSymbol = refactorCount > 0 ? ':x:' : ':white_check_mark:';
-            const conventionSymbol = conventionCount > 0 ? ':x:' : ':white_check_mark:';
-
-            commentBody += `\n\n**Summary:**\n\n| Type       | Check | Number |\n|------------|-------|--------|\n| Errors     | ${errorSymbol} | ${errorCount} |\n| Warnings   | ${warningSymbol} | ${warningCount} |\n| Refactor   | ${refactorSymbol} | ${refactorCount} |\n| Convention | ${conventionSymbol} | ${conventionCount} |\n`;
-
-            if (errorCount > 0) {
-                commentBody += "\n\n:red_circle: **Please address the errors reported by Pylint.**";
-            } else if (warningCount > 0 || refactorCount > 0 || conventionCount > 0) {
-                commentBody += "\n\n:warning: **Consider addressing the warnings reported by Pylint.**";
-            } else {
-                commentBody += "\n\n:white_check_mark: **Pylint found no errors or warnings.**";
-            }
-
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: pull_request_number,
-              body: commentBody
-            });
-      - name: No files changed message
-        if: steps.changed-files.outputs.CHANGED_FILES == ''
-        run: echo "No Python files changed, skipping Pylint."
+          base_sha: ${{ github.event.pull_request.base.sha }}
+          head_sha: ${{ github.sha }}

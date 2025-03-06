@@ -1,0 +1,87 @@
+name: 'Run Tests'
+description: 'Run Python tests with pytest and generate coverage report'
+
+outputs:
+  test_output:
+    description: 'Output from the pytest run'
+    value: ${{ steps.run-tests.outputs.test_output }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    
+    - name: Install dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov
+        pip install -r requirements.txt
+    
+    - name: Run tests
+      id: run-tests
+      shell: bash
+      run: |
+        python -m pytest tests/ -v --cov=src --cov-report=term-missing | tee pytest_output.txt
+        exit ${PIPESTATUS[0]}
+    
+    - name: Create Test Results comment
+      if: always()
+      uses: actions/github-script@v6
+      env:
+        TEST_OUTPUT: ${{ github.workspace }}/pytest_output.txt
+      with:
+        script: |
+          const fs = require('fs');
+          const output = fs.readFileSync(process.env.TEST_OUTPUT, 'utf8');
+          
+          if (context.payload.pull_request == null) {
+            console.log("Not a pull request, skipping commenting");
+            return;
+          }
+
+          const pull_request_number = context.payload.pull_request.number;
+          
+          // Extract test summary
+          const totalTests = (output.match(/collected\s+(\d+)\s+items/)||[])[1] || 0;
+          const passedTests = (output.match(/(\d+)\s+passed/)||[])[1] || 0;
+          const failedTests = (output.match(/(\d+)\s+failed/)||[])[1] || 0;
+          const skippedTests = (output.match(/(\d+)\s+skipped/)||[])[1] || 0;
+          
+          // Extract coverage
+          const coverageMatch = output.match(/TOTAL\s+(\d+\s+\d+\s+(\d+%)\s+\d+\s+\d+)/);
+          const coverage = coverageMatch ? coverageMatch[2] : 'N/A';
+          
+          let commentBody = `## Test Results\n\n`;
+          
+          // Add summary table
+          commentBody += `\n\n`;
+          commentBody += `| Metric | Count | Status |\n`;
+          commentBody += `|--------|--------|--------|\n`;
+          commentBody += `| Total Tests | ${totalTests} | |\n`;
+          commentBody += `| Passed | ${passedTests} | :white_check_mark: |\n`;
+          commentBody += `| Failed | ${failedTests} | ${failedTests > 0 ? ':x:' : ''} |\n`;
+          commentBody += `| Skipped | ${skippedTests} | ${skippedTests > 0 ? ':warning:' : ''} |\n`;
+          commentBody += `| Coverage | ${coverage} | |\n\n`;
+          
+          // Add detailed output in collapsible section
+          commentBody += `<details><summary>Detailed Test Output</summary>\n\n\`\`\`text\n${output}\n\`\`\`\n</details>\n`;
+          
+          // Add overall status
+          if (failedTests > 0) {
+            commentBody += '\n\n:x: **Tests failed - please fix the failing tests**';
+          } else if (skippedTests > 0) {
+            commentBody += '\n\n:warning: **All tests passed but some were skipped**';
+          } else {
+            commentBody += '\n\n:white_check_mark: **All tests passed successfully!**';
+          }
+          
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: pull_request_number,
+            body: commentBody
+          });

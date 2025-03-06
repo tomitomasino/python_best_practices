@@ -77,7 +77,7 @@ ignored-modules=
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
-#init-hook=
+init-hook='import sys; sys.path.append(".")'
 
 # Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
 # number of processors available to use, and will cap the count on Windows to
@@ -95,10 +95,6 @@ load-plugins=
 
 # Pickle collected data for later comparisons.
 persistent=yes
-
-# Resolve imports to .pyi stubs if available. May reduce no-member messages and
-# increase not-an-iterable messages.
-prefer-stubs=no
 
 # Minimum Python version to use for version dependent checks. Will default to
 # the version used to run pylint.
@@ -481,11 +477,6 @@ max-nested-blocks=5
 # it will be considered as an explicit return statement and no message will be
 # printed.
 never-returning-functions=sys.exit,argparse.parse_error
-
-# Let 'consider-using-join' be raised when the separator to join on would be
-# non-empty (resulting in expected fixes of the type: ``"- " + " -
-# ".join(items)``)
-suggest-join-with-non-empty-separator=yes
 
 
 [REPORTS]

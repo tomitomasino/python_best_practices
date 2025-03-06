@@ -4,8 +4,7 @@ This file contains the unit tests for the DataExporter class.
 import unittest
 import os
 import json
-from export.exporter import DataExporter
-
+from src.utils.exporter import DataExporter
 
 class TestDataExporter(unittest.TestCase):
     def setUp(self):
