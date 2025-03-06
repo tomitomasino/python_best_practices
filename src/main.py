@@ -1,15 +1,14 @@
+'''
+This module contains the main application code.
+'''
+
 from fastapi import FastAPI
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-import os
+from src.core.database import Base, engine
 
 app = FastAPI()
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+# Create database tables
+Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 def read_root():
