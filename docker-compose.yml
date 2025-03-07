@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   web:
     build: .
@@ -12,7 +11,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./src:/app/src
-  
+      - ./tests:/app/tests  # Mount tests directory for running tests
   db:
     image: postgres:13
     environment:

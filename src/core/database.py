@@ -2,19 +2,19 @@
 Database configuration and session management
 '''
 import os
-from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# Load environment variables from .env file
-load_dotenv()
+# Get DATABASE_URL from environment variable or use default for local development
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://user:password@db:5432/dbname"
+)
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    raise ValueError("DATABASE_URL environment variable is not set")
-
+# Create engine with basic settings
 engine = create_engine(DATABASE_URL)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
