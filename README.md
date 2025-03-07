@@ -17,6 +17,11 @@ pytest tests/test_data_exporter.py -v
 pylint src/test.py    
 ```
 
+## Run app
+```bash
+docker-compose up
+```
+
 
 
 ## API app project structure - to consider
