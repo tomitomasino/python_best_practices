@@ -1,29 +1,102 @@
-name: Deploy pipeline
+name: Deploy Application
 
 on:
-  pull_request:
-    branches: [ "main" ]
-
-permissions:
-  contents: write
-  pull-requests: write
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'business_params/**'
+      - '.github/workflows/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
 
 jobs:
-  tests:
+  validate-business-params:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/run-tests
-        name: run-test action
+      - name: Validate business parameters
+        run: |
+          TARGET_ENV=${{ github.event.inputs.environment || 'development' }}
+          if [ ! -f "business_params/${TARGET_ENV}.yaml" ]; then
+            echo "Error: Missing business parameters for ${TARGET_ENV}"
+            exit 1
+          fi
+          echo "✓ Found business parameters for ${TARGET_ENV}"
 
-  pylint:
+  deploy:
+    needs: validate-business-params
     runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'development' }}
+    
+    env:
+      APP_NAME: ${{ vars.APP_NAME }}
+      APP_VERSION: ${{ github.sha }}
+      ENVIRONMENT: ${{ github.event.inputs.environment || 'development' }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_POOL_SIZE: ${{ vars.DATABASE_POOL_SIZE }}
+      MAINTENANCE_MODE: ${{ vars.MAINTENANCE_MODE }}
+      DEPLOYMENT_ENABLED: ${{ vars.DEPLOYMENT_ENABLED }}
+      FEATURE_NEW_UI: ${{ vars.FEATURE_NEW_UI }}
+      FEATURE_BETA_API: ${{ vars.FEATURE_BETA_API }}
+      
     steps:
       - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          fetch-depth: 0  # Required to get the changed files
-      - uses: ./.github/actions/run-pylint
-        name: run-pylint action
-        with:
-          base_sha: ${{ github.event.pull_request.base.sha }}
-          head_sha: ${{ github.sha }}
+          python-version: '3.9'
+          
+      - name: Verify business parameters match environment
+        run: |
+          ENV_NAME=${{ github.event.inputs.environment || 'development' }}
+          python -c "
+          import yaml
+          with open(f'business_params/{ENV_NAME}.yaml') as f:
+              params = yaml.safe_load(f)
+          assert params is not None, f'Invalid parameters for {ENV_NAME}'
+          print(f'✓ Verified business parameters for {ENV_NAME}')
+          "
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Load environment configuration
+        run: |
+          cp .env.${{ github.event.inputs.environment || 'development' }} .env
+          
+      - name: Generate runtime environment file
+        run: |
+          echo "APP_NAME=${APP_NAME}" >> .env
+          echo "APP_VERSION=${APP_VERSION}" >> .env
+          echo "ENVIRONMENT=${ENVIRONMENT}" >> .env
+          echo "DATABASE_URL=${DATABASE_URL}" >> .env
+          echo "DATABASE_POOL_SIZE=${DATABASE_POOL_SIZE}" >> .env
+          echo "MAINTENANCE_MODE=${MAINTENANCE_MODE}" >> .env
+          echo "DEPLOYMENT_ENABLED=${DEPLOYMENT_ENABLED}" >> .env
+          echo "FEATURE_NEW_UI=${FEATURE_NEW_UI}" >> .env
+          echo "FEATURE_BETA_API=${FEATURE_BETA_API}" >> .env
+          
+      - name: Run tests
+        run: |
+          pytest
+          
+      - name: Deploy application with correct parameters
+        run: |
+          ENV_NAME=${{ github.event.inputs.environment || 'development' }}
+          echo "Deploying to ${ENV_NAME} with matching business parameters"
+          # Copy correct parameters file
+          cp "business_params/${ENV_NAME}.yaml" "business_params/current.yaml"
+          # Your deployment commands here

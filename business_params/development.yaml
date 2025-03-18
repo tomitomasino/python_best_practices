@@ -1,0 +1,14 @@
+pricing:
+  discount_tiers:
+    - threshold: 50   # Lower threshold for testing
+      percentage: 5
+    - threshold: 200  # Lower threshold for testing
+      percentage: 10
+  minimum_order: 20   # Lower minimum for development
+  free_shipping_threshold: 100
+
+inventory:
+  low_stock_threshold: 5
+  max_items_per_order: 50  # Higher limit for testing
+  restricted_categories:
+    - test_category

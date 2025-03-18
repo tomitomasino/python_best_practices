@@ -1,0 +1,15 @@
+pricing:
+  discount_tiers:
+    - threshold: 100
+      percentage: 5
+    - threshold: 500
+      percentage: 10
+  minimum_order: 50
+  free_shipping_threshold: 200
+
+inventory:
+  low_stock_threshold: 10
+  max_items_per_order: 20
+  restricted_categories:
+    - furniture
+    - appliances
